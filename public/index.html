@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mood Oasis · Safe Space</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="splashScreen" class="splash-screen">
+    <div class="splash-content">
+      <div class="splash-logo">⛺</div>
+      <h1 class="splash-title">Mood Oasis</h1>
+      <p class="splash-subtitle">Take a deep breath... welcome to your safe space.</p>
+      <p class="splash-prompt">( Click anywhere to enter )</p>
+    </div>
+  </div>
+
+<header class="topbar">
+    <div class="brand">
+      <div class="logo">⛺</div>
+      <div>
+        <div class="brand-title">Mood Oasis</div>
+      </div>
+    </div>
+
+    <nav class="top-nav" id="topNav">
+      <button class="nav-btn active" data-target="view-home">Home</button>
+      <button class="nav-btn" data-target="view-history">History</button>
+      <button class="nav-btn" data-target="view-community">Community</button>
+    </nav>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div id="userAuthArea">
+        <button class="btn ghost" onclick="showAuthModal()">Login / Register</button>
+      </div>
+      <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <section id="view-home" class="view-section active">
+      <div class="card wizard-card" id="checkinWizard">
+        <div class="wizard-step active" id="step1">
+          <div class="greeting-box">
+            <div class="date-display" id="liveDateTime">Loading time...</div>
+            <h2 id="greetingText">How are you feeling?</h2>
+            <p class="muted">It's completely okay to feel whatever you are feeling.</p>
+          </div>
+          <div class="mood-pick">
+            <button class="mood" data-mood="anxious">😰 Anxious</button>
+            <button class="mood" data-mood="irritated">😤 Irritated</button>
+            <button class="mood" data-mood="happy">😄 Happy</button>
+            <button class="mood" data-mood="tired">😮‍💨 Tired</button>
+            <button class="mood" data-mood="emo">🥺 Emo</button>
+            <button class="mood" data-mood="calm">😐 Calm</button>
+          </div>
+        </div>
+
+        <div class="wizard-step" id="step2">
+          <button class="btn ghost btn-back" onclick="goToStep(1)">← Back</button>
+          <div class="greeting-box mt">
+            <h2 id="step2Title">Add a quick note</h2>
+            <p class="muted">Tap a preset thought or write your own.</p>
+          </div>
+          <div class="preset-container" id="presetChips"></div>
+          <textarea id="checkinText" class="textarea mt" maxlength="100" placeholder="I'm feeling this way because..."></textarea>
+          <div class="hint" id="textCounter">0/100</div>
+          <div class="step-actions">
+            <button class="btn ghost" onclick="goToStep(3)">Skip note</button>
+            <button class="btn primary" onclick="goToStep(3)">Continue</button>
+          </div>
+        </div>
+
+        <div class="wizard-step" id="step3">
+          <button class="btn ghost btn-back" onclick="goToStep(2)">← Back</button>
+          <div class="greeting-box mt">
+            <h2>Any picture for this moment?</h2>
+            <p class="muted">A photo of your desk, the sky, or just skip it.</p>
+          </div>
+          <div class="file-upload-center">
+            <button class="btn" id="customFileBtn">📎 Choose Image</button>
+            <span id="fileNameDisplay" class="muted mt">No file chosen</span>
+            <input id="checkinImg" type="file" accept="image/*" style="display:none" />
+            <div class="preview-box mt" id="imgPreviewBox">
+              <div class="muted">No image selected</div>
+            </div>
+          </div>
+          <div class="step-actions mt-lg">
+            <button class="btn primary full-width" id="saveCheckinBtn">Save Check-in ✨</button>
+          </div>
+        </div>
+
+        <div class="wizard-step" id="step4">
+          <div class="greeting-box" style="padding: 40px 0;">
+            <div class="success-icon">🪴</div>
+            <h2>Got it. You did great.</h2>
+            <p class="muted">Your mood has been safely stored.</p>
+            <button class="btn ghost mt-lg" onclick="resetWizard()">Log another mood</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-head mt-lg" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0;">Recent check-ins</h3>
+        <input type="date" id="historyDateFilter" class="input" style="width: auto; padding: 4px 12px; font-size: 13px; border-radius: 12px; cursor: pointer; color: var(--primary); font-weight: bold; background: rgba(255,255,255,0.8);" title="Filter by date">
+      </div>
+      <div id="recentCheckins" class="list"></div>
+    </section>
+
+    <section id="view-history" class="view-section">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h2>Emotional Footprint</h2>
+        <p class="muted">See how your feelings ebb and flow over time.</p>
+      </div>
+
+      <div class="history-container">
+
+        <div class="card calendar-card">
+          <div class="calendar-header">
+            <button class="btn ghost btn-icon" id="prevMonthBtn">&lt;</button>
+            <h3 id="calendarMonthYear">Month</h3>
+            <button class="btn ghost btn-icon" id="nextMonthBtn">&gt;</button>
+          </div>
+          <div class="calendar-grid-header">
+            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+
+        <div class="card chart-card">
+          <div style="margin-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary); font-weight: 800;">Mood Fluctuation</h3>
+          </div>
+          <div style="position: relative; height: 260px; width: 100%;">
+            <canvas id="moodChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="view-community" class="view-section">
+      <div class="community-card" style="max-width: 650px; margin: 0 auto; height: 75vh; display: flex; flex-direction: column; padding: 20px 0;">
+
+        <div class="comm-tabs" style="max-width: 400px; margin: 0 auto 20px; width: 100%;">
+          <div class="comm-tab-slider" id="commTabSlider"></div>
+          <button class="comm-tab-btn active" data-tab="tab-wisdom" data-index="0">Wisdom Library</button>
+          <button class="comm-tab-btn" data-tab="tab-moments" data-index="1">Mood Moments</button>
+        </div>
+
+        <div class="comm-content-wrapper">
+          <div class="comm-content-track" id="commContentTrack">
+
+            <div id="tab-wisdom" class="comm-tab-content active" style="position: relative;">
+              <div class="moderation-tip">
+                💡 <b>Rules:</b> 3+ 👍 adds to System Library. 5+ 👎 hides it.
+              </div>
+              <div class="danmaku-stage" id="danmakuStage">
+                <div class="muted" style="text-align:center; font-size:12px; padding-top: 50px;">Loading wisdom...</div>
+              </div>
+              <div class="danmaku-pager">
+                <button class="pager-arrow" id="danmakuPrev" title="Previous 5">&lt;</button>
+                <button class="pager-arrow" id="danmakuNext" title="Next 5">&gt;</button>
+              </div>
+              <button class="fab-btn fab-primary" id="addSuggestionFab" title="Edit a Suggestion">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              </button>
+            </div>
+
+            <div id="tab-moments" class="comm-tab-content" style="position: relative;">
+              <div class="community-feed" id="momentsFeed" style="padding-bottom: 60px;">
+                <div class="muted" style="text-align:center; font-size:12px;">Loading moments...</div>
+              </div>
+              <button class="fab-btn fab-secondary" onclick="showPostModal()" title="Create a Moment">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <div id="suggestionModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">🧘 Soothing Suggestions</span>
+        <button class="btn ghost" onclick="closeModal()">Close</button>
+      </div>
+      <div class="modal-header-sub" style="padding:10px;text-align:center;">
+        <span id="suggestionMoodLabel" style="font-weight:bold;color:var(--primary);"></span>
+      </div>
+      <div id="suggestionList" class="suggestion-list"></div>
+    </div>
+  </div>
+
+  <div id="authModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <span class="modal-title" id="authTitle">Login to Oasis</span>
+        <button class="btn ghost" onclick="closeAuthModal()">Close</button>
+      </div>
+      <div style="padding: 20px;">
+        <input id="authUsername" class="input mt" placeholder="Username" type="text" />
+        <input id="authPassword" class="input mt" placeholder="Password" type="password" />
+        <div class="step-actions mt-lg">
+          <button class="btn ghost" id="toggleAuthModeBtn">Switch to Register</button>
+          <button class="btn primary" id="submitAuthBtn">Login</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="postModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <span class="modal-title">✨ Share a Moment</span>
+        <button class="btn ghost" onclick="closePostModal()">Close</button>
+      </div>
+      <div style="padding: 20px 0 0 0;">
+        <div style="display:flex; gap: 8px; margin-bottom:12px;">
+          <input id="postTitle" class="input" placeholder="Give it a title..." style="flex: 2; font-size: 13px;">
+          <select id="postMood" class="input" style="flex: 1; font-size: 13px;">
+            <option value="">Mood...</option>
+            <option value="anxious">😰 Anxious</option>
+            <option value="irritated">😤 Irritated</option>
+            <option value="happy">😄 Happy</option>
+            <option value="tired">😮‍💨 Tired</option>
+            <option value="emo">🥺 Emo</option>
+            <option value="calm">😐 Calm</option>
+          </select>
+        </div>
+        <textarea id="postDesc" class="textarea" placeholder="Share your moment..." style="min-height: 90px; margin-bottom: 12px; font-size: 13px;"></textarea>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="btn ghost" id="postImgBtn" style="padding: 4px 10px; font-size: 12px; border:1px solid var(--line);">📎 Add Photo</button>
+            <span id="postFileName" class="muted" style="font-size:11px; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+            <input type="file" id="postImgInput" accept="image/*" style="display:none;">
+          </div>
+          <label style="font-size: 12px; color: var(--muted); cursor:pointer; font-weight:bold;">
+            <input type="checkbox" id="postAnon" style="margin-right:4px;"> Post Anonymously 🕵️
+          </label>
+        </div>
+
+        <div style="display:flex; gap: 10px;">
+          <button class="btn ghost full-width" id="importCheckinBtn" style="padding: 8px; font-size: 12px; border:1px solid var(--primary); color:var(--primary);">🔄 Auto-fill Check-in</button>
+          <button class="btn primary full-width" id="submitPostBtn" style="padding: 8px; font-size: 13px;">Post Moment 🚀</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="addSuggestionModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <span class="modal-title">✨ Share Your Wisdom</span>
+        <button class="btn ghost" onclick="closeAddSuggestionModal()">Close</button>
+      </div>
+      <div style="padding: 20px 0 0 0;">
+        <select id="commMood" class="input" style="margin-bottom: 12px; font-size: 13px;">
+          <option value="">Target Mood...</option>
+          <option value="anxious">😰 Anxious</option>
+          <option value="irritated">😤 Irritated</option>
+          <option value="happy">😄 Happy</option>
+          <option value="tired">😮‍💨 Tired</option>
+          <option value="emo">🥺 Emo</option>
+          <option value="calm">😐 Calm</option>
+        </select>
+        <input id="commTitle" class="input" placeholder="Method (e.g. Listen to Jazz)" style="margin-bottom: 12px; font-size: 13px;">
+        <textarea id="commDesc" class="textarea" placeholder="How does this help you? Describe in 1-2 short sentences..." style="min-height: 90px; margin-bottom: 20px; font-size: 13px;"></textarea>
+
+        <div style="display:flex; gap: 10px;">
+          <button class="btn ghost full-width" onclick="closeAddSuggestionModal()">Cancel</button>
+          <button class="btn primary full-width" id="submitCommBtn" style="padding: 8px; font-size: 13px;">Share to Library 💡</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
